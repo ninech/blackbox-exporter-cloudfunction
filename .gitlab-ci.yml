@@ -1,0 +1,3 @@
+include:
+  - project: 'gcp/meta'
+    file: '/go-modules-ci.yml'
