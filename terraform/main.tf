@@ -1,7 +1,22 @@
 data "archive_file" "code" {
   type        = "zip"
-  source_dir  = "${path.module}/../blackbox-exporter"
   output_path = "${path.module}/blackbox-exporter.zip"
+  source {
+    filename = "exporter.go"
+    content  = file("${path.module}/../exporter.go")
+  }
+  source {
+    filename = "go.mod"
+    content  = file("${path.module}/../go.mod")
+  }
+  source {
+    filename = "go.sum"
+    content  = file("${path.module}/../go.sum")
+  }
+  source {
+    filename = "config.yml"
+    content  = var.config
+  }
 }
 
 resource "google_storage_bucket" "cloudfunctions" {
@@ -13,7 +28,7 @@ resource "google_storage_bucket" "cloudfunctions" {
 }
 
 resource "google_storage_bucket_object" "blackbox_exporter" {
-  name       = "cloudfunctions/${format("blackbox-exporter-%s.zip", data.archive_file.code.output_md5)}"
+  name       = "cloudfunctions${var.suffix}/${format("blackbox-exporter-%s.zip", data.archive_file.code.output_md5)}"
   bucket     = var.bucket_name
   source     = data.archive_file.code.output_path
   depends_on = [google_storage_bucket.cloudfunctions]
@@ -22,17 +37,18 @@ resource "google_storage_bucket_object" "blackbox_exporter" {
 resource "google_cloudfunctions_function" "blackbox_exporter" {
   provider    = google-beta
   project     = var.project
-  name        = "blackbox-exporter"
+  name        = "blackbox-exporter${var.suffix}"
   description = "blackbox exporter as a function"
   runtime     = "go113"
   region      = var.region
 
-  ingress_settings      = "ALLOW_INTERNAL_ONLY"
+  ingress_settings      = var.ingress_settings
   available_memory_mb   = 128
   source_archive_bucket = var.bucket_name
   source_archive_object = google_storage_bucket_object.blackbox_exporter.name
   trigger_http          = true
   entry_point           = "Handler"
+  timeout               = 10
 }
 
 # IAM entry for all users to invoke the function
