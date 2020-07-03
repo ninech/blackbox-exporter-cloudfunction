@@ -34,6 +34,12 @@ var (
 		"icmp": prober.ProbeICMP,
 		"dns":  prober.ProbeDNS,
 	}
+	client *http.Client
+
+	cloudFunctionColdStartGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "cloud_function_cold_start",
+		Help: "Displays whether or not the cloud function was cold started",
+	})
 )
 
 // Handler is a http.Handler which will be called by the
@@ -74,6 +80,13 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if module.Prober == "http" {
+		if err := coldStartRequest(target); err != nil {
+			http.Error(w, fmt.Sprintf("Unable to make a cold start request: %s", err), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	level.Info(logger).Log("msg", "Beginning probe", "probe", module.Prober, "timeout_seconds", timeoutSeconds)
 
 	probeSuccessGauge := prometheus.NewGauge(prometheus.GaugeOpts{
@@ -89,6 +102,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(probeSuccessGauge)
 	registry.MustRegister(probeDurationGauge)
+	registry.MustRegister(cloudFunctionColdStartGauge)
 	success := prober(ctx, target, module, registry, logger)
 	duration := time.Since(start).Seconds()
 	probeDurationGauge.Set(duration)
@@ -124,4 +138,24 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", string(contentType))
 	w.Header().Add("Content-Length", fmt.Sprint(buf.Len()))
 	fmt.Fprint(w, buf)
+}
+
+// If a google cloud function is experiencing a cold start, TLS handshakes were observed
+// to sometimes take a really long time just for the first request. This function detects
+// cold starts by checking if the global `http.Client` `client` already exists. If not,
+// it will issue a GET request to the target so the subsequent http probe will not be
+// affected by the cold start.
+// https://cloud.google.com/functions/docs/concepts/exec#function_scope_versus_global_scope
+func coldStartRequest(target string) error {
+	if client != nil {
+		cloudFunctionColdStartGauge.Set(0)
+		return nil
+	}
+	cloudFunctionColdStartGauge.Set(1)
+	level.Info(logger).Log("msg", "cold start detected, making an initial request to the target", "target", target)
+	client = &http.Client{
+		Timeout: 10 * time.Second,
+	}
+	_, err := client.Get(target)
+	return err
 }
