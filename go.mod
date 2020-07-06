@@ -1,4 +1,4 @@
-module github.com/ninech/blackbox-exporter-cloudrun
+module github.com/ninech/blackbox-exporter-cloudfunction
 
 go 1.14
 
@@ -11,5 +11,5 @@ require (
 	github.com/prometheus/client_golang v1.7.1
 	github.com/prometheus/common v0.10.0
 	github.com/sergi/go-diff v1.1.0 // indirect
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
