@@ -18,7 +18,6 @@ import (
 	"github.com/prometheus/blackbox_exporter/config"
 	"github.com/prometheus/blackbox_exporter/prober"
 	"github.com/prometheus/client_golang/prometheus"
-	pconfig "github.com/prometheus/common/config"
 	"github.com/prometheus/common/expfmt"
 )
 
@@ -182,7 +181,7 @@ func coldStartRequest(target string) error {
 // Define a regular expression which will be matched against the response body. If it matches
 // the probe will be marked as failed.
 //
-func overwriteHTTPModuleParams(params url.Values, headers http.Header, conf *config.HTTPProbe) error {
+func overwriteHTTPModuleParams(params url.Values, conf *config.HTTPProbe) error {
 	for name, value := range params {
 		switch name {
 		case "http_valid_status_codes":
