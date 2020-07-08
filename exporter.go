@@ -182,12 +182,7 @@ func coldStartRequest(target string) error {
 // Define a regular expression which will be matched against the response body. If it matches
 // the probe will be marked as failed.
 //
-// http_basic_auth_username
-// Define a username which will be used for basic auth in the request being made
-//
-// http_basic_auth_password
-// Define a password which will be used for basic auth in the request being made
-func overwriteHTTPModuleParams(params url.Values, conf *config.HTTPProbe) error {
+func overwriteHTTPModuleParams(params url.Values, headers http.Header, conf *config.HTTPProbe) error {
 	for name, value := range params {
 		switch name {
 		case "http_valid_status_codes":
@@ -206,16 +201,6 @@ func overwriteHTTPModuleParams(params url.Values, conf *config.HTTPProbe) error 
 		case "http_fail_on_regexp":
 			// we only support one regexp currently
 			conf.FailIfBodyMatchesRegexp = []string{value[0]}
-		case "http_basic_auth_username":
-			if conf.HTTPClientConfig.BasicAuth == nil {
-				conf.HTTPClientConfig.BasicAuth = &pconfig.BasicAuth{}
-			}
-			conf.HTTPClientConfig.BasicAuth.Username = value[0]
-		case "http_basic_auth_password":
-			if conf.HTTPClientConfig.BasicAuth == nil {
-				conf.HTTPClientConfig.BasicAuth = &pconfig.BasicAuth{}
-			}
-			conf.HTTPClientConfig.BasicAuth.Password = pconfig.Secret(value[0])
 		}
 	}
 	return nil

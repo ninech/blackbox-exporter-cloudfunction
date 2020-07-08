@@ -16,11 +16,6 @@ import (
 	"github.com/alecthomas/assert"
 )
 
-const (
-	testUsername = "test"
-	testPassword = "testPassword"
-)
-
 var ts map[string]*httptest.Server
 
 func TestMain(m *testing.M) {
@@ -38,20 +33,6 @@ func initTestServers() map[string]*httptest.Server {
 	result := make(map[string]*httptest.Server)
 	result["simple"] = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "ok")
-	}))
-	result["basicAuth"] = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		auth := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
-		if len(auth) != 2 || auth[0] != "Basic" {
-			http.Error(w, "authorization failed", http.StatusUnauthorized)
-			return
-		}
-		payload, _ := base64.StdEncoding.DecodeString(auth[1])
-		pair := strings.SplitN(string(payload), ":", 2)
-		if len(pair) != 2 || !(pair[0] == testUsername && pair[1] == testPassword) {
-			http.Error(w, "authorization failed", http.StatusUnauthorized)
-			return
-		}
-		fmt.Fprintln(w, "authorized")
 	}))
 	result["randomClientError"] = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rand.Seed(time.Now().UnixNano())
@@ -91,10 +72,6 @@ func TestHandler(t *testing.T) {
 		{"negative fail on regexp test", ts["simple"].URL, "", urlValue("http_fail_on_regexp", "fail"), "probe_success 1", http.StatusOK},
 		{"empty fail on regexp test", ts["simple"].URL, "", urlValue("http_expect_regexp", ""), "probe_success 1", http.StatusOK},
 		{"confusing regexp test", ts["simple"].URL, "", urlValue("http_expect_regexp", "ok", "http_fail_on_regexp", "ok"), "probe_success 0", http.StatusOK},
-		{"positive basic auth test", ts["basicAuth"].URL, "", urlValue("http_basic_auth_username", testUsername, "http_basic_auth_password", testPassword), "probe_success 1", http.StatusOK},
-		{"negative basic auth test", ts["basicAuth"].URL, "", urlValue("http_basic_auth_username", "myUsername", "http_basic_auth_password", "myPassword"), "probe_success 0", http.StatusOK},
-		{"only username basic auth test", ts["basicAuth"].URL, "", urlValue("http_basic_auth_username", testUsername), "probe_success 0", http.StatusOK},
-		{"validate that login is not possible for user", ts["basicAuth"].URL, "", urlValue("http_basic_auth_username", "myUser", "http_basic_auth_password", "myPassword", "http_valid_status_codes", "401"), "probe_success 1", http.StatusOK},
 	}
 	for _, tt := range handlerTests {
 		tt := tt
