@@ -5,8 +5,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -81,6 +84,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if module.Prober == "http" {
+		if err := overwriteHTTPModuleParams(params, &module.HTTP); err != nil {
+			http.Error(w, fmt.Sprintf("Error during parsing module overwrites: %v", err), http.StatusInternalServerError)
+			return
+		}
 		if err := coldStartRequest(target); err != nil {
 			http.Error(w, fmt.Sprintf("Unable to make a cold start request: %s", err), http.StatusInternalServerError)
 			return
@@ -158,4 +165,77 @@ func coldStartRequest(target string) error {
 	}
 	_, err := client.Get(target)
 	return err
+}
+
+// overwriteModuleParams allows to specify some overwrites for the http prober:
+//
+// http_valid_status_codes
+// Overwrite the valid HTTP status codes of the request being made by defining comma
+// separated status codes. You can also use a shortcut like 2xx for the range of 200-299.
+//
+// http_expect_regexp
+// Define a regular expression which will be matched against the response body. If it matches
+// the probe will be marked as successful.
+//
+// http_fail_on_regexp
+// Define a regular expression which will be matched against the response body. If it matches
+// the probe will be marked as failed.
+//
+func overwriteHTTPModuleParams(params url.Values, conf *config.HTTPProbe) error {
+	for name, value := range params {
+		switch name {
+		case "http_valid_status_codes":
+			var validStatusCodes []int
+			for _, codes := range value {
+				validCodes, err := parseStatusCodes(codes)
+				if err != nil {
+					return err
+				}
+				validStatusCodes = append(validStatusCodes, validCodes...)
+			}
+			conf.ValidStatusCodes = validStatusCodes
+		case "http_expect_regexp":
+			// we only support one regexp currently
+			conf.FailIfBodyNotMatchesRegexp = []string{value[0]}
+		case "http_fail_on_regexp":
+			// we only support one regexp currently
+			conf.FailIfBodyMatchesRegexp = []string{value[0]}
+		}
+	}
+	return nil
+}
+
+// parseStatusCodes parses the given comma separated status codes
+// it is possible to use shortcuts like 2xx, 3xx, etc which will be expanded
+// to the corresponding whole range of status codes
+func parseStatusCodes(codes string) ([]int, error) {
+	var result []int
+	splittedCodes := strings.Split(codes, ",")
+	for _, code := range splittedCodes {
+		code := strings.TrimSpace(code)
+		match, err := regexp.MatchString("[0-9]xx", code)
+		if err != nil {
+			return nil, err
+		}
+		if match {
+			mainCode, _ := strconv.Atoi(string(code[0]))
+			result = append(result, generateCodeRange(mainCode*100, mainCode*100+99)...)
+			continue
+		}
+		parsed, err := strconv.Atoi(code)
+		if err != nil {
+			return nil, fmt.Errorf("Can not convert status code \"%s\" to a number", code)
+		}
+		result = append(result, parsed)
+	}
+	return result, nil
+}
+
+// generateCodeRange creates a slice with consecutive ints from start to end
+func generateCodeRange(start, end int) []int {
+	result := make([]int, end-start+1)
+	for i := range result {
+		result[i] = start + i
+	}
+	return result
 }
