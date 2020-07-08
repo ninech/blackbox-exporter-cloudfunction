@@ -1,7 +1,6 @@
 package exporter
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -9,7 +8,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
