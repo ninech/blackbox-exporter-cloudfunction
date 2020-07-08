@@ -70,15 +70,15 @@ func TestHandler(t *testing.T) {
 		name           string
 		target         string
 		module         string
-		overwrites     url.Values
+		overwrites     func(t *testing.T) url.Values
 		bodyContains   string
 		expectedStatus int
 	}{
-		{"valid target", ts["simple"].URL, "http_2xx", url.Values{}, "probe_success 1", http.StatusOK},
-		{"default module", ts["simple"].URL, "", url.Values{}, "probe_success 1", http.StatusOK},
-		{"invalid module", ts["simple"].URL, "http_invalid", url.Values{}, "Unknown module", http.StatusBadRequest},
-		{"invalid target", "http://doesnot.exist.local", "http_2xx", url.Values{}, "probe_success 0", http.StatusOK},
-		{"no target", "", "http_2xx", url.Values{}, "Target parameter is missing", http.StatusBadRequest},
+		{"valid target", ts["simple"].URL, "http_2xx", urlValue(), "probe_success 1", http.StatusOK},
+		{"default module", ts["simple"].URL, "", urlValue(), "probe_success 1", http.StatusOK},
+		{"invalid module", ts["simple"].URL, "http_invalid", urlValue(), "Unknown module", http.StatusBadRequest},
+		{"invalid target", "http://doesnot.exist.local", "http_2xx", urlValue(), "probe_success 0", http.StatusOK},
+		{"no target", "", "http_2xx", urlValue(), "Target parameter is missing", http.StatusBadRequest},
 		{"simple status code overwrite", ts["simple"].URL, "", urlValue("http_valid_status_codes", "200"), "probe_success 1", http.StatusOK},
 		{"special notation status code", ts["randomClientError"].URL, "", urlValue("http_valid_status_codes", "4xx"), "probe_success 1", http.StatusOK},
 		{"comma separated codes", ts["serverError"].URL, "", urlValue("http_valid_status_codes", "500,501,502,503"), "probe_success 1", http.StatusOK},
@@ -100,10 +100,10 @@ func TestHandler(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			testURL := "http://exporter/probe?target=" + tt.target + "&module=" + tt.module
-			if len(tt.overwrites) > 0 {
-				testURL = testURL + "&" + tt.overwrites.Encode()
+			if len(tt.overwrites(t)) > 0 {
+				testURL = testURL + "&" + tt.overwrites(t).Encode()
 			}
-			fmt.Printf("Using URL: %s\n", testURL)
+			t.Logf("Using URL: %s\n", testURL)
 			req := httptest.NewRequest("GET", testURL, nil)
 			w := httptest.NewRecorder()
 			Handler(w, req)
@@ -117,13 +117,15 @@ func TestHandler(t *testing.T) {
 	}
 }
 
-func urlValue(keyValue ...string) url.Values {
-	if len(keyValue)%2 != 0 {
-		panic("Expected key-value pairs as arguments, but got uneven amount")
+func urlValue(keyValue ...string) func(t *testing.T) url.Values {
+	return func(t *testing.T) url.Values {
+		if len(keyValue)%2 != 0 {
+			t.Fatal("Expected key-value pairs as arguments, but got uneven amount")
+		}
+		uv := url.Values{}
+		for i := 0; i < len(keyValue); i = i + 2 {
+			uv.Add(keyValue[i], keyValue[i+1])
+		}
+		return uv
 	}
-	uv := url.Values{}
-	for i := 0; i < len(keyValue); i = i + 2 {
-		uv.Add(keyValue[i], keyValue[i+1])
-	}
-	return uv
 }
