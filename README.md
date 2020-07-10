@@ -18,6 +18,10 @@ module "blackbox-exporter-cloudrun" {
 }
 ```
 
+## Resources
+
+To get consistent performance it is recommended to at set `var.available_memory_mb` to at least `256`. The function does not need that much memory but this will also give it more [CPU power](https://cloud.google.com/functions/pricing#compute_time). The costs should pretty much equalize or be even less as the function will finish way faster than with just 128MB/200Mhz.
+
 This does not require any authentication but is only available within the VPC using the `ALLOW_INTERNAL_ONLY` ingress setting.
 
 ## Testing the function

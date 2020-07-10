@@ -43,7 +43,7 @@ resource "google_cloudfunctions_function" "blackbox_exporter" {
   region      = var.region
 
   ingress_settings      = var.ingress_settings
-  available_memory_mb   = 128
+  available_memory_mb   = var.available_memory_mb
   source_archive_bucket = var.bucket_name
   source_archive_object = google_storage_bucket_object.blackbox_exporter.name
   trigger_http          = true

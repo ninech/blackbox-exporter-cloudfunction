@@ -28,3 +28,8 @@ variable "create_bucket" {
   description = "Create a GCS bucket with var.bucket_name for this function. If false, var.bucket_name has to be preexisting."
   default     = true
 }
+
+variable "available_memory_mb" {
+  description = "Memory available to the Cloud Functions instance in MB. Also dictates the amount of CPU power the function gets."
+  default     = 256
+}
