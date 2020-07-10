@@ -10,7 +10,7 @@ The `terraform` directory provides a ready to be used Terraform module to easily
 
 ```terraform
 module "blackbox-exporter-cloudrun" {
-  source      = "github.com/ninech/blackbox-exporter-cloudfunction//terraform?ref=v0.1.0"
+  source      = "github.com/ninech/blackbox-exporter-cloudfunction//terraform?ref=v0.1.2"
   project     = "some-project-id"
   region      = "europe-west6"
   bucket_name = "my-cloudfunctions"
