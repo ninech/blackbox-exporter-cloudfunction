@@ -65,7 +65,7 @@ func TestHandler(t *testing.T) {
 		{"positive expect regexp test", ts["simple"].URL, "", urlValue("http_expect_regexp", "[oO][kK]"), "probe_success 1", http.StatusOK},
 		{"negative expect regexp test", ts["simple"].URL, "", urlValue("http_expect_regexp", "fail"), "probe_success 0", http.StatusOK},
 		{"empty expect regexp test", ts["simple"].URL, "", urlValue("http_expect_regexp", ""), "probe_success 1", http.StatusOK},
-		{"invalid expect regexp test", ts["simple"].URL, "", urlValue("http_expect_regexp", "*"), "probe_success 0", http.StatusOK},
+		{"invalid expect regexp test", ts["simple"].URL, "", urlValue("http_expect_regexp", "*"), "Error during parsing module overwrites", http.StatusBadRequest},
 		{"positive fail on regexp test", ts["simple"].URL, "", urlValue("http_fail_on_regexp", "[oO][kK]"), "probe_success 0", http.StatusOK},
 		{"negative fail on regexp test", ts["simple"].URL, "", urlValue("http_fail_on_regexp", "fail"), "probe_success 1", http.StatusOK},
 		{"empty fail on regexp test", ts["simple"].URL, "", urlValue("http_expect_regexp", ""), "probe_success 1", http.StatusOK},

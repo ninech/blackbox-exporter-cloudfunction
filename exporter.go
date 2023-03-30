@@ -56,7 +56,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	sc := &config.SafeConfig{
 		C: &config.Config{},
 	}
-	if err := sc.ReloadConfig(path.Join(sourceCodeDir, configFile)); err != nil {
+	if err := sc.ReloadConfig(path.Join(sourceCodeDir, configFile), logger); err != nil {
 		http.Error(w, fmt.Sprintf("Unable to load config: %s", err), http.StatusInternalServerError)
 		return
 	}
@@ -85,7 +85,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 	if module.Prober == "http" {
 		if err := overwriteHTTPModuleParams(params, &module.HTTP); err != nil {
-			http.Error(w, fmt.Sprintf("Error during parsing module overwrites: %v", err), http.StatusInternalServerError)
+			http.Error(w, fmt.Sprintf("Error during parsing module overwrites: %v", err), http.StatusBadRequest)
 			return
 		}
 		if err := coldStartRequest(target); err != nil {
@@ -180,7 +180,6 @@ func coldStartRequest(target string) error {
 // http_fail_on_regexp
 // Define a regular expression which will be matched against the response body. If it matches
 // the probe will be marked as failed.
-//
 func overwriteHTTPModuleParams(params url.Values, conf *config.HTTPProbe) error {
 	for name, value := range params {
 		switch name {
@@ -195,11 +194,19 @@ func overwriteHTTPModuleParams(params url.Values, conf *config.HTTPProbe) error 
 			}
 			conf.ValidStatusCodes = validStatusCodes
 		case "http_expect_regexp":
+			exp, err := regexp.Compile(value[0])
+			if err != nil {
+				return fmt.Errorf("can not compile regexp given via http_expect_regexp: %w", err)
+			}
 			// we only support one regexp currently
-			conf.FailIfBodyNotMatchesRegexp = []string{value[0]}
+			conf.FailIfBodyNotMatchesRegexp = []config.Regexp{{Regexp: exp}}
 		case "http_fail_on_regexp":
+			exp, err := regexp.Compile(value[0])
+			if err != nil {
+				return fmt.Errorf("can not compile regexp given via http_fail_on_regexp: %w", err)
+			}
 			// we only support one regexp currently
-			conf.FailIfBodyMatchesRegexp = []string{value[0]}
+			conf.FailIfBodyMatchesRegexp = []config.Regexp{{Regexp: exp}}
 		}
 	}
 	return nil
