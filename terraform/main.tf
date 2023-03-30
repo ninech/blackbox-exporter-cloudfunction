@@ -39,7 +39,7 @@ resource "google_cloudfunctions_function" "blackbox_exporter" {
   project     = var.project
   name        = "blackbox-exporter${var.suffix}"
   description = "blackbox exporter as a function"
-  runtime     = "go113"
+  runtime     = var.runtime
   region      = var.region
 
   ingress_settings      = var.ingress_settings

@@ -33,3 +33,8 @@ variable "available_memory_mb" {
   description = "Memory available to the Cloud Functions instance in MB. Also dictates the amount of CPU power the function gets."
   default     = 256
 }
+
+variable "runtime" {
+  description = "The runtime which the cloudfunction should use. Check https://cloud.google.com/functions/docs/concepts/execution-environment for possible values."
+  default = "go120"
+}
