@@ -51,9 +51,9 @@ resource "google_cloudfunctions_function" "blackbox_exporter" {
   timeout               = 10
 
   timeouts {
-    create = 15
-    update = 15
-    delete = 15
+    create = "15m"
+    update = "15m"
+    delete = "15m"
   }
 }
 
