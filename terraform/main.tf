@@ -49,6 +49,12 @@ resource "google_cloudfunctions_function" "blackbox_exporter" {
   trigger_http          = true
   entry_point           = "Handler"
   timeout               = 10
+
+  timeouts {
+    create = 15
+    update = 15
+    delete = 15
+  }
 }
 
 # IAM entry for all users to invoke the function
