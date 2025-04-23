@@ -53,9 +53,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), timeoutSeconds*time.Second)
 	defer cancel()
 	r = r.WithContext(ctx)
-	sc := &config.SafeConfig{
-		C: &config.Config{},
-	}
+	sc := config.NewSafeConfig(prometheus.NewRegistry())
 	if err := sc.ReloadConfig(path.Join(sourceCodeDir, configFile), logger); err != nil {
 		http.Error(w, fmt.Sprintf("Unable to load config: %s", err), http.StatusInternalServerError)
 		return
