@@ -36,5 +36,5 @@ variable "available_memory_mb" {
 
 variable "runtime" {
   description = "The runtime which the cloudfunction should use. Check https://cloud.google.com/functions/docs/concepts/execution-environment for possible values."
-  default = "go120"
+  default = "go121"
 }
