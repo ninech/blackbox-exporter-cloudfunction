@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/alecthomas/assert v0.0.0-20170929043011-405dbfeb8e38
-	github.com/go-kit/kit v0.10.0
+	github.com/go-kit/kit v0.13.0
 	github.com/prometheus/blackbox_exporter v0.25.0
 	github.com/prometheus/client_golang v1.19.0
 	github.com/prometheus/common v0.52.2
@@ -21,7 +21,7 @@ require (
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/mattn/go-isatty v0.0.4 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/miekg/dns v1.1.58 // indirect
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
