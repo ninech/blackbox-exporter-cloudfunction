@@ -1,6 +1,6 @@
 module github.com/ninech/blackbox-exporter-cloudfunction
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/alecthomas/assert v0.0.0-20170929043011-405dbfeb8e38
@@ -28,13 +28,13 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
-	golang.org/x/mod v0.17.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/oauth2 v0.24.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
-	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
+	golang.org/x/mod v0.32.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
+	golang.org/x/oauth2 v0.36.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/tools v0.41.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241209162323-e6fa225c2576 // indirect
 	google.golang.org/grpc v1.67.3 // indirect
 	google.golang.org/protobuf v1.35.2 // indirect
