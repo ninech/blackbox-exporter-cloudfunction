@@ -215,8 +215,8 @@ func overwriteHTTPModuleParams(params url.Values, conf *config.HTTPProbe) error 
 // to the corresponding whole range of status codes
 func parseStatusCodes(codes string) ([]int, error) {
 	var result []int
-	splittedCodes := strings.Split(codes, ",")
-	for _, code := range splittedCodes {
+	splitCodes := strings.Split(codes, ",")
+	for _, code := range splitCodes {
 		code := strings.TrimSpace(code)
 		match, err := regexp.MatchString("[0-9]xx", code)
 		if err != nil {

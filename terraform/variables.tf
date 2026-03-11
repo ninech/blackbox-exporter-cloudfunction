@@ -15,7 +15,7 @@ variable "config" {
 }
 
 variable "suffix" {
-  description = "Suffix to add to the function name. Useful for when delpoying the function multiple times in a project."
+  description = "Suffix to add to the function name. Useful for when deploying the function multiple times in a project."
   default     = ""
 }
 
