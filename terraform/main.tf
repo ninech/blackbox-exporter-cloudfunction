@@ -1,3 +1,18 @@
+terraform {
+  required_version = ">= 1.0"
+
+  required_providers {
+    archive = {
+      source  = "hashicorp/archive"
+      version = ">= 2.0"
+    }
+    google = {
+      source  = "hashicorp/google"
+      version = ">= 4.0"
+    }
+  }
+}
+
 data "archive_file" "code" {
   type        = "zip"
   output_path = "${path.module}/blackbox-exporter.zip"
