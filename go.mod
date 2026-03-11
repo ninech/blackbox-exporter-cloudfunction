@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.9.2
-	github.com/alecthomas/assert v0.0.0-20170929043011-405dbfeb8e38
+	github.com/alecthomas/assert v1.0.0
 	github.com/go-kit/log v0.2.1
 	github.com/prometheus/blackbox_exporter v0.25.0
 	github.com/prometheus/client_golang v1.19.0
@@ -13,7 +13,7 @@ require (
 
 require (
 	github.com/alecthomas/colour v0.1.0 // indirect
-	github.com/alecthomas/repr v0.0.0-20200325044227-4184120f674c // indirect
+	github.com/alecthomas/repr v0.0.0-20210801044451-80ca428c5142 // indirect
 	github.com/alecthomas/units v0.0.0-20231202071711-9a357b53e9c9 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -30,7 +30,7 @@ require (
 	github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
-	github.com/sergi/go-diff v1.1.0 // indirect
+	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
