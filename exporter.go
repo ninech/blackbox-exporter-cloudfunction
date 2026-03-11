@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
@@ -14,8 +15,6 @@ import (
 	"time"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
-	"github.com/go-kit/log"
-	"github.com/go-kit/log/level"
 	"github.com/prometheus/blackbox_exporter/config"
 	"github.com/prometheus/blackbox_exporter/prober"
 	"github.com/prometheus/client_golang/prometheus"
@@ -31,7 +30,7 @@ var (
 	// as specified here https://github.com/GoogleCloudPlatform/buildpacks/blob/56eaad4dfe6c7bd0ecc4a175de030d2cfab9ae1c/cmd/go/functions_framework/main.go#L38.
 	sourceCodeDir = "serverless_function_source_code"
 
-	logger  = log.NewLogfmtLogger(log.NewSyncWriter(os.Stderr))
+	logger  = slog.New(slog.NewTextHandler(os.Stderr, nil))
 	probers = map[string]prober.ProbeFn{
 		"http": prober.ProbeHTTP,
 		"tcp":  prober.ProbeTCP,
@@ -97,7 +96,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_ = level.Info(logger).Log("msg", "Beginning probe", "probe", module.Prober, "timeout_seconds", timeoutSeconds)
+	logger.Info("Beginning probe", "probe", module.Prober, "timeout_seconds", timeoutSeconds)
 
 	probeSuccessGauge := prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "probe_success",
@@ -118,14 +117,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	probeDurationGauge.Set(duration)
 	if success {
 		probeSuccessGauge.Set(1)
-		_ = level.Info(logger).Log("msg", "Probe succeeded", "duration_seconds", duration)
+		logger.Info("Probe succeeded", "duration_seconds", duration)
 	} else {
-		_ = level.Error(logger).Log("msg", "Probe failed", "duration_seconds", duration)
+		logger.Error("Probe failed", "duration_seconds", duration)
 	}
 
 	mfs, err := registry.Gather()
 	if err != nil {
-		_ = level.Debug(logger).Log("msg", err.Error())
+		logger.Debug(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -139,7 +138,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	enc := expfmt.NewEncoder(buf, contentType)
 	for _, mf := range mfs {
 		if err := enc.Encode(mf); err != nil {
-			_ = level.Debug(logger).Log("msg", err.Error())
+			logger.Debug(err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -162,7 +161,7 @@ func coldStartRequest(target string) error {
 		return nil
 	}
 	cloudFunctionColdStartGauge.Set(1)
-	_ = level.Info(logger).Log("msg", "cold start detected, making an initial request to the target", "target", target)
+	logger.Info("cold start detected, making an initial request to the target", "target", target)
 	client = &http.Client{
 		Timeout: 10 * time.Second,
 	}
