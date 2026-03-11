@@ -2,14 +2,13 @@ package exporter
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/alecthomas/assert"
 )
@@ -30,14 +29,12 @@ func TestMain(m *testing.M) {
 func initTestServers() map[string]*httptest.Server {
 	result := make(map[string]*httptest.Server)
 	result["simple"] = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "ok")
+		_, _ = fmt.Fprintln(w, "ok")
 	}))
 	result["randomClientError"] = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rand.Seed(time.Now().UnixNano())
 		http.Error(w, "client error", 400+rand.Intn(100))
 	}))
 	result["serverError"] = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		rand.Seed(time.Now().UnixNano())
 		errorCodes := []int{500, 501, 502, 503}
 		http.Error(w, "server error", errorCodes[rand.Intn(len(errorCodes))])
 	}))
@@ -81,9 +78,9 @@ func TestHandler(t *testing.T) {
 			t.Logf("Using URL: %s\n", testURL)
 			req := httptest.NewRequest("GET", testURL, nil)
 			w := httptest.NewRecorder()
-			Handler(w, req)
+			handler(w, req)
 			resp := w.Result()
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			assert.NoError(t, err)
 
 			assert.Equal(t, tt.expectedStatus, resp.StatusCode, fmt.Sprintf("Expected status code %v, but got %v", tt.expectedStatus, resp.StatusCode))

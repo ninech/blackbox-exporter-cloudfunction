@@ -12,10 +12,6 @@ trap "rm -rf $WORK_DIR" EXIT
 cd "$WORK_DIR"
 go mod init functions.local/app
 
-# Fetch the functions framework before creating the workspace, otherwise Go
-# workspace mode interferes with go get in module mode.
-go get github.com/GoogleCloudPlatform/functions-framework-go
-
 # Now merge with the main repo, as Google's buildpack does.
 go work init . "$REPO_ROOT"
 
