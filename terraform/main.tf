@@ -34,21 +34,28 @@ resource "google_storage_bucket_object" "blackbox_exporter" {
   depends_on = [google_storage_bucket.cloudfunctions]
 }
 
-resource "google_cloudfunctions_function" "blackbox_exporter" {
-  provider    = google-beta
-  project     = var.project
+resource "google_cloudfunctions2_function" "blackbox_exporter" {
   name        = "blackbox-exporter${var.suffix}"
+  location    = var.region
+  project     = var.project
   description = "blackbox exporter as a function"
-  runtime     = var.runtime
-  region      = var.region
 
-  ingress_settings      = var.ingress_settings
-  available_memory_mb   = var.available_memory_mb
-  source_archive_bucket = var.bucket_name
-  source_archive_object = google_storage_bucket_object.blackbox_exporter.name
-  trigger_http          = true
-  entry_point           = "Handler"
-  timeout               = 10
+  build_config {
+    runtime     = var.runtime
+    entry_point = "Handler"
+    source {
+      storage_source {
+        bucket = var.bucket_name
+        object = google_storage_bucket_object.blackbox_exporter.name
+      }
+    }
+  }
+
+  service_config {
+    available_memory = "${var.available_memory_mb}M"
+    timeout_seconds  = 10
+    ingress_settings = var.ingress_settings
+  }
 
   timeouts {
     create = "15m"
@@ -58,12 +65,11 @@ resource "google_cloudfunctions_function" "blackbox_exporter" {
 }
 
 # IAM entry for all users to invoke the function
-resource "google_cloudfunctions_function_iam_member" "invoker" {
-  provider       = google-beta
-  project        = google_cloudfunctions_function.blackbox_exporter.project
-  region         = google_cloudfunctions_function.blackbox_exporter.region
-  cloud_function = google_cloudfunctions_function.blackbox_exporter.name
+resource "google_cloud_run_service_iam_member" "invoker" {
+  project  = google_cloudfunctions2_function.blackbox_exporter.project
+  location = google_cloudfunctions2_function.blackbox_exporter.location
+  service  = google_cloudfunctions2_function.blackbox_exporter.name
 
-  role   = "roles/cloudfunctions.invoker"
+  role   = "roles/run.invoker"
   member = "allUsers"
 }
