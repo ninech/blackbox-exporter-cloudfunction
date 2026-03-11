@@ -20,7 +20,7 @@ variable "suffix" {
 }
 
 variable "ingress_settings" {
-  description = "Controls what traffic can reach the function. Allowed values are ALLOW_ALL and ALLOW_INTERNAL_ONLY."
+  description = "Controls what traffic can reach the function. Allowed values are ALLOW_ALL, ALLOW_INTERNAL_ONLY and ALLOW_INTERNAL_AND_GCLB."
   default     = "ALLOW_INTERNAL_ONLY"
 }
 
